@@ -128,7 +128,7 @@ Route::get('simulaciones/export', function (Request $request) {
 
                 $html .= '<tr>';
                 $html .= '<td style="padding:6px 8px;">' . $sanitize($item->id) . '</td>';
-                $html .= '<td style="padding:6px 8px;">' . htmlspecialchars($sanitize($item->nombre)) . '</td>';
+                $html .= '<td style="padding:6px 8px;">' . htmlspecialchars($sanitize($item->nombre), ENT_QUOTES, 'UTF-8') . '</td>';
                 $html .= '<td style="padding:6px 8px;">' . $sanitize($item->dni) . '</td>';
                 $html .= '<td style="padding:6px 8px;">' . $sanitize($item->celular) . '</td>';
                 $html .= '<td style="padding:6px 8px;">' . $monto . '</td>';
@@ -136,7 +136,7 @@ Route::get('simulaciones/export', function (Request $request) {
                 $html .= '<td style="padding:6px 8px;">' . htmlspecialchars($tipo) . '</td>';
                 $html .= '<td style="padding:6px 8px;">' . htmlspecialchars($sanitize($item->agencia)) . '</td>';
                 $html .= '<td style="padding:6px 8px;">' . htmlspecialchars($estado) . '</td>';
-                $html .= '<td style="padding:6px 8px;">' . htmlspecialchars($created) . '</td>';
+                $html .= '<td style="padding:6px 8px;">' . $created . '</td>';
                 $html .= '</tr>';
             }
         });

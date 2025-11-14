@@ -239,23 +239,15 @@ class Simulaciones extends Component
      */
     public function exportAll()
     {
-        // Generar parámetros según filtros actuales para la ruta de export
-        $params = [];
-        if ($this->filtroAgencia) $params['agencia'] = $this->filtroAgencia;
-        if ($this->filtroEstado) $params['estado'] = $this->filtroEstado;
-        if ($this->filtroTipo) $params['tipo_credito'] = $this->filtroTipo;
-        if ($this->filtroFecha) $params['date_from'] = $this->filtroFecha;
-        if ($this->filtroFecha) $params['date_to'] = $this->filtroFecha;
-        if ($this->search) $params['search'] = $this->search;
+        // Usamos los filtros activos para construir la URL de exportación
+        $params = $this->getAppliedFilters();
 
         $url = route('simulaciones.export', $params);
 
-            $this->dispatch('start-download', url: $url, message: 'Iniciando descarga...');
-            $this->dispatch('show-toast', type: 'success', message: 'Preparando exportación...');
+        $this->dispatch('start-download', url: $url, message: 'Iniciando descarga...');
+        $this->dispatch('show-toast', type: 'success', message: 'Preparando exportación...');
         return;
     }
-    // Aquí iremos agregando propiedades y métodos según los requerimientos.
-    // Por ahora es un scaffold vacío.
 
     public function render()
     {
@@ -263,67 +255,11 @@ class Simulaciones extends Component
 
         // filtros del header antiguos (compatibilidad)
         if ($this->agencia) {
-            $query->where('agencia', $this->agencia);
+            $this->filtroAgencia = $this->agencia;
         }
 
         if ($this->estado) {
-            $query->where('estado', $this->estado);
-        }
-
-        if ($this->tipo_credito) {
-            $query->where('tipo_credito', $this->tipo_credito);
-        }
-
-        if ($this->date_from) {
-            $query->whereDate('created_at', '>=', $this->date_from);
-        }
-
-        if ($this->date_to) {
-            $query->whereDate('created_at', '<=', $this->date_to);
-        }
-
-        if ($this->search) {
-            $query->where(function ($q) {
-                $q->where('dni', 'like', '%'.$this->search.'%')
-                  ->orWhere('nombre', 'like', '%'.$this->search.'%');
-            });
-        }
-
-        // filtros embebidos (fila de filtros)
-        if ($this->filtroNombre) {
-            $query->where('nombre', 'like', '%'.$this->filtroNombre.'%');
-        }
-
-        if ($this->filtroDni) {
-            $query->where('dni', 'like', '%'.$this->filtroDni.'%');
-        }
-
-        if ($this->filtroCelular) {
-            $query->where('celular', 'like', '%'.$this->filtroCelular.'%');
-        }
-
-        if ($this->filtroMonto) {
-            $query->where('monto_solicitado', '>=', $this->filtroMonto);
-        }
-
-        if ($this->filtroPlazo) {
-            $query->where('plazo_meses', $this->filtroPlazo);
-        }
-
-        if ($this->filtroTipo) {
-            $query->where('tipo_credito', $this->filtroTipo);
-        }
-
-        if ($this->filtroAgencia) {
-            $query->where('agencia', $this->filtroAgencia);
-        }
-
-        if ($this->filtroEstado) {
-            $query->where('estado', $this->filtroEstado);
-        }
-
-        if ($this->filtroFecha) {
-            $query->whereDate('created_at', $this->filtroFecha);
+            $this->filtroEstado = $this->estado;
         }
 
         $simulaciones = $query->paginate($this->perPage);
@@ -336,19 +272,57 @@ class Simulaciones extends Component
      */
     protected function getQuery()
     {
-        $query = Simulacion::query()->latest();
+        return Simulacion::query()
+            ->when($this->search, function ($q, $search) {
+                $q->where(function ($sub) use ($search) {
+                    $sub->where('dni', 'like', '%' . $search . '%')
+                        ->orWhere('nombre', 'like', '%' . $search . '%');
+                });
+            })
+            ->when($this->date_from, fn ($q, $date) => $q->whereDate('created_at', '>=', $date))
+            ->when($this->date_to, fn ($q, $date) => $q->whereDate('created_at', '<=', $date))
+            ->when($this->filtroNombre, fn ($q, $nombre) => $q->where('nombre', 'like', '%' . $nombre . '%'))
+            ->when($this->filtroDni, fn ($q, $dni) => $q->where('dni', 'like', '%' . $dni . '%'))
+            ->when($this->filtroCelular, fn ($q, $celular) => $q->where('celular', 'like', '%' . $celular . '%'))
+            ->when($this->filtroMonto, fn ($q, $monto) => $q->where('monto_solicitado', '>=', $monto))
+            ->when($this->filtroPlazo, fn ($q, $plazo) => $q->where('plazo_meses', $plazo))
+            ->when($this->filtroTipo, fn ($q, $tipo) => $q->where('tipo_credito', $tipo))
+            ->when($this->filtroAgencia, fn ($q, $agencia) => $q->where('agencia', $agencia))
+            ->when($this->filtroEstado, fn ($q, $estado) => $q->where('estado', $estado))
+            ->when($this->filtroFecha, fn ($q, $fecha) => $q->whereDate('created_at', $fecha))
+            ->latest();
+    }
 
-        // aplicar mismos filtros mínimos (solo los embebidos para selección)
-        if ($this->filtroNombre) $query->where('nombre', 'like', '%'.$this->filtroNombre.'%');
-        if ($this->filtroDni) $query->where('dni', 'like', '%'.$this->filtroDni.'%');
-        if ($this->filtroCelular) $query->where('celular', 'like', '%'.$this->filtroCelular.'%');
-        if ($this->filtroMonto) $query->where('monto_solicitado', '>=', $this->filtroMonto);
-        if ($this->filtroPlazo) $query->where('plazo_meses', $this->filtroPlazo);
-        if ($this->filtroTipo) $query->where('tipo_credito', $this->filtroTipo);
-        if ($this->filtroAgencia) $query->where('agencia', $this->filtroAgencia);
-        if ($this->filtroEstado) $query->where('estado', $this->filtroEstado);
-        if ($this->filtroFecha) $query->whereDate('created_at', $this->filtroFecha);
+    /**
+     * Devuelve un array con los filtros que están actualmente aplicados.
+     * Útil para la exportación.
+     */
+    protected function getAppliedFilters(): array
+    {
+        $filters = [
+            'search' => $this->search,
+            'date_from' => $this->date_from,
+            'date_to' => $this->date_to,
+            'nombre' => $this->filtroNombre,
+            'dni' => $this->filtroDni,
+            'celular' => $this->filtroCelular,
+            'monto_solicitado' => $this->filtroMonto,
+            'plazo_meses' => $this->filtroPlazo,
+            'tipo_credito' => $this->filtroTipo,
+            'agencia' => $this->filtroAgencia,
+            'estado' => $this->filtroEstado,
+            'created_at' => $this->filtroFecha,
+        ];
 
-        return $query;
+        // Unificar filtros de URL y de tabla
+        if ($this->agencia) {
+            $filters['agencia'] = $this->agencia;
+        }
+        if ($this->estado) {
+            $filters['estado'] = $this->estado;
+        }
+
+        // Devolver solo los filtros que tienen valor
+        return array_filter($filters);
     }
 }
