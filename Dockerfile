@@ -11,10 +11,17 @@ WORKDIR /var/www
 # Copiar el proyecto al contenedor
 COPY . /var/www
 
+# Crear carpetas de cache y dar permisos
+RUN mkdir -p storage/framework/cache/data \
+    storage/framework/sessions \
+    storage/framework/views \
+    bootstrap/cache \
+ && chmod -R 775 storage bootstrap/cache
+
 # Instalar Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Instalar dependencias de Laravel SIN ejecutar scripts (para evitar errores con artisan)
+# Instalar dependencias de Laravel SIN scripts (para evitar errores en build)
 RUN COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader --no-scripts
 
 # Comando que se ejecuta cuando el contenedor arranca
