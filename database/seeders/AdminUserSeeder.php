@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use Spatie\Permission\Models\Role;
 
 class AdminUserSeeder extends Seeder
 {
@@ -20,7 +21,7 @@ class AdminUserSeeder extends Seeder
         if (!$user) {
             // Al crear, dejamos la contraseña en texto plano para que el cast
             // `password => 'hashed'` en el modelo User la hashee automáticamente.
-            User::create([
+            $user = User::create([
                 'name' => 'Administrador',
                 'email' => $adminEmail,
                 'password' => $adminPassword,
@@ -31,6 +32,14 @@ class AdminUserSeeder extends Seeder
             // terminemos con un doble-hash.
             $user->password = $adminPassword;
             $user->save();
+        }
+
+        // Asegurar rol admin y asignarlo
+        try {
+            Role::findOrCreate('admin');
+            $user->assignRole('admin');
+        } catch (\Throwable $e) {
+            // ignorar si tablas de roles aún no existen
         }
     }
 }

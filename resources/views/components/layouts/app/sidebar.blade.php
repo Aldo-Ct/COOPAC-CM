@@ -7,19 +7,50 @@
         <flux:sidebar sticky stashable class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
             <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
 
-            <a href="{{ route('dashboard') }}" class="me-5 flex items-center space-x-2 rtl:space-x-reverse" wire:navigate>
+            <a href="{{ route('panel') }}" class="me-5 flex items-center space-x-2 rtl:space-x-reverse" wire:navigate>
                 <x-app-logo />
             </a>
 
             <flux:navlist variant="outline">
                 <flux:navlist.group :heading="__('Platform')" class="grid">
                     {{-- Segmento 1: Inicio (vacío por ahora) --}}
-                    <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Inicio') }}</flux:navlist.item>
+                    <flux:navlist.item icon="home" :href="route('panel')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Inicio') }}</flux:navlist.item>
 
-                    {{-- Segmento 2: Simulaciones (modulo) --}}
-                    <flux:navlist.item icon="calculator" :href="route('simulaciones')" :current="request()->routeIs('simulaciones')" wire:navigate>
-                        {{ __('Simulaciones') }}
-                    </flux:navlist.item>
+                    {{-- Segmento 2: Simulaciones (módulo) --}}
+                    @can('simulaciones.ver')
+                        <flux:navlist.item icon="calculator" :href="route('simulaciones')" :current="request()->routeIs('simulaciones')" wire:navigate>
+                            {{ __('Simulaciones') }}
+                        </flux:navlist.item>
+                    @endcan
+
+                    {{-- Segmento 3: Anuncios --}}
+                    @can('anuncios.gestionar')
+                        <flux:navlist.item icon="megaphone" :href="route('admin.anuncios.index')" :current="request()->routeIs('admin.anuncios.*')" wire:navigate>
+                            {{ __('Anuncios') }}
+                        </flux:navlist.item>
+                    @endcan
+
+                    {{-- Segmento 4: Noticias --}}
+                    @can('noticias.gestionar')
+                        <flux:navlist.item icon="newspaper" :href="route('admin.noticias.index')" :current="request()->routeIs('admin.noticias.*')" wire:navigate>
+                            {{ __('Noticias') }}
+                        </flux:navlist.item>
+                    @endcan
+
+                    {{-- Segmento 5b: Usuarios/Roles (solo Admin) --}}
+                    @role('admin')
+                        <flux:navlist.item icon="users" :href="route('admin.usuarios.index')" :current="request()->routeIs('admin.usuarios.*')" wire:navigate>
+                            {{ __('Usuarios · Roles') }}
+                        </flux:navlist.item>
+                    @endrole
+
+                    {{-- Segmento 5: RR.HH. --}}
+                    @can('rrhh.gestionar')
+                        <flux:navlist.item icon="layout-grid" :href="route('rrhh.asesores.index')" :current="request()->routeIs('rrhh.asesores.*')" wire:navigate>
+                            {{ __('RR.HH. · Asesores') }}
+                        </flux:navlist.item>
+                    @endcan
+
                 </flux:navlist.group>
             </flux:navlist>
 

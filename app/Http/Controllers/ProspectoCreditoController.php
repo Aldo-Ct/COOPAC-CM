@@ -19,31 +19,78 @@ class ProspectoCreditoController extends Controller
     public function store(Request $request)
     {
         // 1. Validar datos del formulario
-        $request->validate([
-        'nombre_completo'   => 'required|string|max:255',
-        'dni'               => 'required|string|max:15',
-        'celular'           => 'required|string|max:20',
-        'monto_solicitado'  => 'required|numeric',
-        'plazo_meses'       => 'required|integer',
-        'tipo_credito'      => 'required|string|max:100',
-        'agencia'           => 'required|string|max:255',
+        $data = $request->validate([
+            'nombre_completo'   => ['required','string','max:150'],
+            'dni'               => ['required','digits:8'],
+            'celular'           => ['required','digits:9'],
+            'monto_solicitado'  => ['required','numeric','min:1'],
+            'plazo_meses'       => ['required','integer','min:1'],
+            'agencia'           => ['required','string','max:100'],
+            'tipo_credito'      => ['nullable','string','max:100'],
+            'cuota_estimada'    => ['nullable','numeric'], // viene del hidden
         ]);
+
+        // Si te mandaron la cuota desde el JS la usamos; igual la recalculamos por seguridad:
+        $tea  = 0.4092;
+        $tem  = pow(1 + $tea, 1/12) - 1;
+        $monto= (float)$data['monto_solicitado'];
+        $plazo= (int)$data['plazo_meses'];
+        $cuotaSrv = $monto * ( $tem * pow(1+$tem, $plazo) ) / ( pow(1+$tem, $plazo) - 1 );
+        $cuotaSrv = round($cuotaSrv, 2);
+
+        // --- Generador de Amortización ---
+        $schedule = [];
+        $saldo = round($monto, 2);
+        $totalIntereses = 0.00;
+        $totalAmortizacion = 0.00;
+
+        for ($i = 1; $i <= $plazo; $i++) {
+            $interes = round($saldo * $tem, 2);
+            $amort   = round($cuotaSrv - $interes, 2);
+
+            // Ajuste en la última cuota para evitar saldos residuales por redondeo
+            if ($i === (int)$plazo) {
+                $amort = $saldo;
+                $cuotaFinal = round($interes + $amort, 2);
+            } else {
+                $cuotaFinal = $cuotaSrv;
+            }
+
+            $saldo = round($saldo - $amort, 2);
+
+            $schedule[] = [
+                'n'            => $i,
+                'cuota'        => $cuotaFinal,
+                'interes'      => $interes,
+                'amortizacion' => $amort,
+                'saldo'        => max($saldo, 0),
+            ];
+
+            $totalIntereses    += $interes;
+            $totalAmortizacion += $amort;
+        }
+
+        $resumen = ['cuota' => $cuotaSrv, 'total_intereses' => round($totalIntereses, 2), 'total_amortizacion' => round($totalAmortizacion, 2), 'total_pagado' => round($totalIntereses + $totalAmortizacion, 2), 'plazo' => $plazo];
+        // --- Fin del Generador ---
 
         // 2. Guardar en la base de datos
         ProspectoCredito::create([
-        'nombre_completo'   => $request->nombre_completo,
-        'dni'               => $request->dni,
-        'celular'           => $request->celular,
-        'monto_solicitado'  => $request->monto_solicitado,
-        'plazo_meses'       => $request->plazo_meses,
-        'tipo_credito'      => $request->tipo_credito,
-        'agencia'           => $request->agencia,   // <--- NUEVO
-        'estado'            => 'nuevo', // estado inicial
+            'nombre_completo'   => $data['nombre_completo'],
+            'dni'               => $data['dni'],
+            'celular'           => $data['celular'],
+            'monto_solicitado'  => $monto,
+            'plazo_meses'       => $plazo,
+            'agencia'           => $data['agencia'],
+            'cuota_estimada'    => $cuotaSrv,
+            'tipo_credito'      => $data['tipo_credito'],
+            'estado'            => 'nuevo', // estado inicial
         ]);
 
         // 3. Responder al usuario
         return redirect()
             ->back()
-            ->with('success', 'Tu solicitud ha sido registrada. Un asesor te contactará por WhatsApp.');
+            ->with('success', 'Tu cuota estimada es S/ '.number_format($cuotaSrv,2) . '. Un asesor te contactará pronto.')
+            ->with('tabla_pagos', $schedule)
+            ->with('resumen_pagos', $resumen);
     }
 }

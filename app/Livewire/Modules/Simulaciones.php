@@ -130,7 +130,7 @@ class Simulaciones extends Component
 
     public function clearSelection()
     {
-        $this->selectedId = null;
+        $this->resetFilters();
     }
 
     public function changeEstado($id, $nuevoEstado)
@@ -262,6 +262,8 @@ class Simulaciones extends Component
             $this->filtroEstado = $this->estado;
         }
 
+        $query = $this->getQuery();
+
         $simulaciones = $query->paginate($this->perPage);
 
         return view('livewire.modules.simulaciones', compact('simulaciones'));
@@ -324,5 +326,36 @@ class Simulaciones extends Component
 
         // Devolver solo los filtros que tienen valor
         return array_filter($filters);
+    }
+
+    /**
+     * Restablece filtros y selección a su estado inicial.
+     */
+    protected function resetFilters(): void
+    {
+        $this->reset([
+            'agencia',
+            'estado',
+            'tipo_credito',
+            'date_from',
+            'date_to',
+            'search',
+            'selectedId',
+            'deleteId',
+            'checkAll',
+            'selected',
+            'bulkAction',
+            'filtroNombre',
+            'filtroDni',
+            'filtroCelular',
+            'filtroMonto',
+            'filtroPlazo',
+            'filtroTipo',
+            'filtroAgencia',
+            'filtroEstado',
+            'filtroFecha',
+        ]);
+
+        $this->resetPage();
     }
 }

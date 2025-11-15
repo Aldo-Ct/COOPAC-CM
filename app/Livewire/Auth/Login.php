@@ -33,14 +33,6 @@ class Login extends Component
         'password' => ['required', 'string'],
     ]);
 
-    // Correo oficial del administrador
-    $correoAdminOficial = 'admin@coopac.pe';
-
-    // Si el email ingresado NO es el admin, mostrar vista bloqueada
-    if ($this->email !== $correoAdminOficial) {
-        return redirect()->route('acceso.denegado');
-    }
-
     // Procede con el login normal
     if (! Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
         throw ValidationException::withMessages([
@@ -50,7 +42,8 @@ class Login extends Component
 
     session()->regenerate();
 
-    return redirect()->intended(route('dashboard', absolute: false));
+    // Redirige inteligentemente según rol
+    return redirect()->intended(route('panel', absolute: false));
 }
 
 

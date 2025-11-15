@@ -59,38 +59,37 @@
               <a class="nav-link nav-chip @yield('activo-inicio')" href="/">Inicio</a>
             </li>
 
+            <li class="nav-item">
+              <a class="nav-link nav-chip @yield('activo-noticias')" href="{{ route('noticias') }}">Noticias</a>
+            </li>
+
             <li class="nav-item dropdown">
               <a class="nav-link nav-chip dropdown-toggle @yield('activo-quienes')"
                  href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Quiénes somos
               </a>
               <ul class="dropdown-menu dropdown-menu-dark">
-                <li><a class="dropdown-item" href="#">Historia</a></li>
-                <li><a class="dropdown-item" href="#">Misión y Visión</a></li>
+                <li><a class="dropdown-item" href="{{ route('quienes') }}#historia">Historia</a></li>
+                <li><a class="dropdown-item" href="{{ route('quienes') }}#mision-vision">Misión y Visión</a></li>
+                <li><a class="dropdown-item" href="{{ route('quienes') }}#valores">Valores</a></li>
               </ul>
             </li>
 
             <li class="nav-item dropdown">
               <a class="nav-link nav-chip dropdown-toggle @yield('activo-creditos')"
                  href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Créditos
+                Servicios
               </a>
               <ul class="dropdown-menu dropdown-menu-dark">
                 <li>
-                  <a class="dropdown-item @yield('activo-simulador')"
-                     href="{{ route('simulador') }}">
-                     Simulador de Créditos
+                  <a class="dropdown-item @yield('activo-simulador')" href="{{ route('simulador') }}">
+                    Simulador de Créditos
                   </a>
                 </li>
-                <li><a class="dropdown-item" href="#">Tasas y Requisitos</a></li>
-                @auth
-                  <li class="nav-item">
-                    <a class="nav-link nav-chip @yield('activo-dashboard')" href="{{ route('dashboard') }}">
-                      Dashboard
-                    </a>
-                  </li>
-                  @endauth
-
+                <li><a class="dropdown-item" href="{{ route('servicios.ahorro') }}">Ahorro</a></li>
+                <li><a class="dropdown-item" href="{{ route('servicios.creditos') }}">Créditos</a></li>
+                <li><a class="dropdown-item" href="{{ route('servicios.complementarios') }}">Servicios Complementarios</a></li>
+                <li><a class="dropdown-item" href="{{ route('servicios.beneficios') }}">Beneficios</a></li>
               </ul>
             </li>
 
@@ -216,7 +215,7 @@
             <i class="bi bi-shield-lock-fill"></i> Acceso Privado
         </a>
     @else
-        <a href="{{ route('dashboard') }}" class="btn-acceso">
+        <a href="{{ route('panel') }}" class="btn-acceso">
             <i class="bi bi-speedometer2"></i> Ir al Dashboard
         </a>
     @endguest
@@ -243,5 +242,58 @@
     {{-- Scripts específicos de cada página si necesita --}}
   @stack('scripts')
 
+@if(isset($anuncios_modal) && $anuncios_modal->count() > 0)
+<div id="modal-comunicativo" class="modal-comunicativo-overlay" style="display: none;">
+    <div class="modal-comunicativo-content">
+        <button id="modal-comunicativo-close" class="modal-comunicativo-close">&times;</button>
+        <div id="carouselAnuncios" class="carousel slide" data-bs-ride="carousel" @if($anuncios_modal->count() > 1) data-bs-interval="3000" @else data-bs-interval="false" @endif>
+            <div class="carousel-inner">
+                @foreach($anuncios_modal as $index => $anuncio)
+                    <div class="carousel-item @if($index == 0) active @endif">
+                        @if($anuncio->titulo)
+                            <h5 class="text-center p-3">{{ $anuncio->titulo }}</h5>
+                        @endif
+                        <img src="{{ $anuncio->imagen_url }}" class="d-block w-100" alt="{{ $anuncio->titulo }}">
+                    </div>
+                @endforeach
+            </div>
+            @if($anuncios_modal->count() > 1)
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselAnuncios" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselAnuncios" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            @endif
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('modal-comunicativo');
+    const closeModal = document.getElementById('modal-comunicativo-close');
+
+    if (modal) {
+        modal.style.display = 'flex'; // Show modal on every load
+
+        closeModal.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+
+        // Close modal on overlay click
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
+});
+</script>
+@endif
+
   </body>
 </html>
+

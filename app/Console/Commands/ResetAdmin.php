@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\User;
+use Spatie\Permission\Models\Role;
 
 class ResetAdmin extends Command
 {
@@ -40,6 +41,15 @@ class ResetAdmin extends Command
             $user->save();
 
             $this->info("Contraseña del admin actualizada: {$email}");
+        }
+
+        try {
+            Role::firstOrCreate(['name' => 'admin']);
+            if (! $user->hasRole('admin')) {
+                $user->assignRole('admin');
+            }
+        } catch (\Throwable $e) {
+            $this->warn('No se pudo asignar rol admin (¿migraciones pendientes de spatie/permission?).');
         }
 
         $this->info('Hecho. El admin puede iniciar sesión con la contraseña proporcionada.');

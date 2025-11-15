@@ -9,13 +9,10 @@ class ProspectoCredito extends Model
     protected $table = 'prospectos_credito';
 
     protected $fillable = [
-        'nombre_completo',
-        'dni',
-        'celular',
-        'monto_solicitado',
-        'plazo_meses',
+        'nombre_completo','dni','celular',
+        'monto_solicitado','plazo_meses','agencia',
+        'cuota_estimada',
         'tipo_credito',
-        'estado',
-        'agencia',
+        'estado', // Añadido para que no falle al crear
     ];
 }

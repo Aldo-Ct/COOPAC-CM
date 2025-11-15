@@ -261,12 +261,3 @@ class SimulacionExportController extends Controller
     }
 }
 
-```
-
-#### 2. Actualizar el Archivo de Rutas
-
-Ahora, reemplazamos toda la lógica en `web.php` con una simple llamada al nuevo controlador.
-
-```diff
---- a/c:/Users/pc/Music/COOPERATIVA DE AHORRO Y CREDITO CABANILLAS/Coopac/routes/web.php
-+++ b/c:/Users/pc/Music/COOPERATIVA DE AHORRO Y CREDITO CABANILLAS/Coopac/routes/web.php

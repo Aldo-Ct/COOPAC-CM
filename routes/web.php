@@ -6,12 +6,34 @@ use App\Livewire\Settings\Profile;
 use App\Livewire\Settings\TwoFactor;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
+use App\Http\Controllers\NoticiaController;
 use App\Http\Controllers\ProspectoCreditoController;
+use App\Models\Anuncio;
+use App\Http\Controllers\Admin\AnuncioController;
+use App\Http\Controllers\Admin\NoticiaController as AdminNoticiaController;
 
 // página principal pública
 Route::get('/', function () {
-    return view('welcome');
+    $anuncios = App\Models\Anuncio::vigentes()->orderBy('orden')->get()
+      ->map(fn($a)=>[
+          'img'  => $a->imagen_url,
+          'alt'  => $a->titulo,
+          'href' => $a->url
+      ])
+      ->all();
+
+    $anuncios_modal = App\Models\Anuncio::vigentes()->orderBy('orden')->get();
+
+    return view('welcome', compact('anuncios', 'anuncios_modal'));
 })->name('home');
+
+// Noticias page
+Route::get('/noticias', [NoticiaController::class, 'index'])->name('noticias');
+// Quiénes somos: página única con secciones + compatibilidad de rutas antiguas
+Route::view('/quienes', 'Nosotros')->name('quienes');
+Route::get('/quienes/historia', fn () => redirect('/quienes#historia'))->name('quienes.historia');
+Route::get('/quienes/mision-vision', fn () => redirect('/quienes#mision-vision'))->name('quienes.mision');
+Route::get('/quienes/valores', fn () => redirect('/quienes#valores'))->name('quienes.valores');
 
 // simulador público
 Route::get('/simulador', [ProspectoCreditoController::class, 'showForm'])
@@ -24,252 +46,53 @@ Route::post('/simulador', [ProspectoCreditoController::class, 'store'])
 Route::view('/acceso-denegado', 'acceso-denegado')
     ->name('acceso.denegado');
 
-// dashboard (solo admin)
+// Acceso privado inteligente (envía según rol)
+Route::get('/panel', function() {
+    if (!auth()->check()) {
+        return redirect()->route('login');
+    }
+    $u = auth()->user();
+    if ($u->hasRole('admin') || $u->hasRole('asesor')) {
+        return redirect()->route('dashboard');
+    }
+    if ($u->hasRole('imagen')) {
+        return redirect()->route('admin.anuncios.index');
+    }
+    if ($u->hasRole('rrhh')) {
+        return redirect()->route('rrhh.asesores.index');
+    }
+    return redirect()->route('acceso.denegado');
+})->name('panel');
+
+// dashboard (asesor o admin)
 Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified', \App\Http\Middleware\IsAdmin::class])
+    ->middleware(['auth', 'role_or_permission:asesor|admin|simulaciones.ver'])
     ->name('dashboard');
 
-// Módulo: Simulaciones (scaffold)
-Route::get('simulaciones', \App\Livewire\Modules\Simulaciones::class)
-    ->middleware(['auth', 'verified'])
+
+// Módulo: Contenidos (Noticias/Anuncios) – con roles o permisos
+Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
+    Route::middleware('role_or_permission:imagen|admin|anuncios.gestionar')->group(function () {
+        Route::post('anuncios/{anuncio}/toggle', [App\Http\Controllers\Admin\AnuncioController::class, 'toggle'])->name('anuncios.toggle');
+        Route::resource('anuncios', App\Http\Controllers\Admin\AnuncioController::class)->except(['show']);
+    });
+
+    Route::middleware('role_or_permission:imagen|admin|noticias.gestionar')->group(function () {
+        Route::patch('noticias/{noticia}/toggle', [AdminNoticiaController::class, 'toggle'])->name('noticias.toggle');
+        Route::resource('noticias', AdminNoticiaController::class)->except(['show']);
+    });
+});
+
+// Módulo: Simulaciones – Asesor o Admin
+Route::get('simulaciones', App\Livewire\Modules\Simulaciones::class)
+    ->middleware(['auth', 'role_or_permission:asesor|admin|simulaciones.ver'])
     ->name('simulaciones');
 
 // Exportar simulaciones filtradas a CSV
-use Illuminate\Http\Request;
-use App\Models\Simulacion;
-
-Route::get('simulaciones/export', function (Request $request) {
-    $query = Simulacion::query()->latest();
-
-    // Si se pasó un parámetro 'ids' (exportar seleccionados), filtrar por ellos
-    if ($request->filled('ids')) {
-        $ids = array_filter(explode(',', $request->query('ids')));
-        if (!empty($ids)) {
-            $query->whereIn('id', $ids);
-        }
-    }
-
-    if ($request->filled('agencia')) {
-        $query->where('agencia', $request->query('agencia'));
-    }
-
-    if ($request->filled('estado')) {
-        $query->where('estado', $request->query('estado'));
-    }
-
-    if ($request->filled('tipo_credito')) {
-        $query->where('tipo_credito', $request->query('tipo_credito'));
-    }
-
-    if ($request->filled('date_from')) {
-        $query->whereDate('created_at', '>=', $request->query('date_from'));
-    }
-
-    if ($request->filled('date_to')) {
-        $query->whereDate('created_at', '<=', $request->query('date_to'));
-    }
-
-    if ($request->filled('search')) {
-        $search = $request->query('search');
-        $query->where(function ($q) use ($search) {
-            $q->where('dni', 'like', "%{$search}%")
-              ->orWhere('nombre', 'like', "%{$search}%");
-        });
-    }
-
-    $filename = 'simulaciones_' . now()->format('Ymd_His') . '.csv';
-
-    // Encabezados legibles para export
-    $columns = ['ID','Nombre','DNI','Celular','Monto (S/)','Plazo (meses)','Tipo de crédito','Agencia','Estado','Creado'];
-
-    // Elegir formato: 'xls' (HTML que Excel abre) o 'pdf'. Por defecto 'xls'.
-    $format = strtolower($request->query('format', 'xls'));
-
-    // Helper: generar HTML de tabla (devuelve string)
-    $generateTableHtml = function () use ($query, $columns) {
-        $sanitize = function ($value) {
-            if (is_null($value)) return '';
-            $v = (string) $value;
-            $v = strip_tags($v);
-            $v = preg_replace("/\r\n|\r|\n/", ' ', $v);
-            $v = trim(preg_replace('/\s+/', ' ', $v));
-            return $v;
-        };
-
-        $html = '';
-        $html .= '<table border="1" style="border-collapse:collapse;width:100%;">';
-        $html .= '<thead><tr>';
-        foreach ($columns as $col) {
-            $html .= '<th style="font-weight:bold;padding:6px 8px;background:#fff9c2;">' . htmlspecialchars($col) . '</th>';
-        }
-        $html .= '</tr></thead><tbody>';
-
-        $query->chunk(200, function ($items) use (&$html, $sanitize) {
-            foreach ($items as $item) {
-                $monto = '';
-                if (isset($item->monto_solicitado) && is_numeric($item->monto_solicitado)) {
-                    $monto = number_format($item->monto_solicitado, 2, ',', '.');
-                }
-
-                $plazo = $sanitize($item->plazo_meses);
-                $tipo = $sanitize($item->tipo_credito);
-                if ($tipo !== '') $tipo = ucfirst(str_replace('_', ' ', $tipo));
-                $estado = $sanitize($item->estado);
-                if ($estado !== '') $estado = ucfirst(str_replace('_', ' ', $estado));
-
-                $created = '';
-                if ($item->created_at) {
-                    try {
-                        $created = $item->created_at->format('d/m/Y H:i');
-                    } catch (\Throwable $e) {
-                        $created = $sanitize($item->created_at);
-                    }
-                }
-
-                $html .= '<tr>';
-                $html .= '<td style="padding:6px 8px;">' . $sanitize($item->id) . '</td>';
-                $html .= '<td style="padding:6px 8px;">' . htmlspecialchars($sanitize($item->nombre), ENT_QUOTES, 'UTF-8') . '</td>';
-                $html .= '<td style="padding:6px 8px;">' . $sanitize($item->dni) . '</td>';
-                $html .= '<td style="padding:6px 8px;">' . $sanitize($item->celular) . '</td>';
-                $html .= '<td style="padding:6px 8px;">' . $monto . '</td>';
-                $html .= '<td style="padding:6px 8px;">' . $plazo . '</td>';
-                $html .= '<td style="padding:6px 8px;">' . htmlspecialchars($tipo) . '</td>';
-                $html .= '<td style="padding:6px 8px;">' . htmlspecialchars($sanitize($item->agencia)) . '</td>';
-                $html .= '<td style="padding:6px 8px;">' . htmlspecialchars($estado) . '</td>';
-                $html .= '<td style="padding:6px 8px;">' . $created . '</td>';
-                $html .= '</tr>';
-            }
-        });
-
-        $html .= '</tbody></table>';
-        return $html;
-    };
-
-    // Exportar como XLS (HTML que Excel abre)
-    if (in_array($format, ['xls', 'excel'])) {
-        $filenameX = 'simulaciones_' . now()->format('Ymd_His') . '.xls';
-        $callback = function () use ($generateTableHtml) {
-            // BOM
-            echo "\xEF\xBB\xBF";
-            echo $generateTableHtml();
-        };
-
-        return response()->streamDownload($callback, $filenameX, [
-            'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
-            'Cache-Control' => 'no-cache, must-revalidate',
-        ]);
-    }
-
-    // Exportar como PDF: requiere dompdf o barryvdh/laravel-dompdf instalado
-    if ($format === 'pdf') {
-        $filenamePdf = 'simulaciones_' . now()->format('Ymd_His') . '.pdf';
-        $html = "\xEF\xBB\xBF" . $generateTableHtml();
-
-        // Si está disponible la facade PDF (barryvdh)
-        if (class_exists('\\Barryvdh\\DomPDF\\Facade\\Pdf') || class_exists('PDF')) {
-            try {
-                if (class_exists('PDF')) {
-                    return PDF::loadHtml($html)->download($filenamePdf);
-                }
-                return \Barryvdh\DomPDF\Facade\Pdf::loadHtml($html)->download($filenamePdf);
-            } catch (\Throwable $e) {
-                return response('Error generando PDF: ' . $e->getMessage(), 500);
-            }
-        }
-
-        // Si está dompdf instalado (sin facade)
-        if (class_exists('Dompdf\\Dompdf')) {
-            try {
-                $dompdf = new \Dompdf\Dompdf();
-                $dompdf->loadHtml($html);
-                $dompdf->setPaper('A4', 'landscape');
-                $dompdf->render();
-                $dompdf->stream($filenamePdf);
-                return response('', 200);
-            } catch (\Throwable $e) {
-                return response('Error generando PDF: ' . $e->getMessage(), 500);
-            }
-        }
-
-        return response('Para exportar a PDF instala barryvdh/laravel-dompdf o dompdf/dompdf (composer require barryvdh/laravel-dompdf)', 500);
-    }
-
-    $callback = function () use ($query, $columns) {
-        // Escribir BOM UTF-8 para compatibilidad con Excel en Windows
-        echo "\xEF\xBB\xBF";
-
-        $handle = fopen('php://output', 'w');
-
-        // Sanitizador simple: eliminar saltos de línea y etiquetas HTML
-        $sanitize = function ($value) {
-            if (is_null($value)) return '';
-            $v = (string) $value;
-            // remover etiquetas HTML
-            $v = strip_tags($v);
-            // reemplazar saltos de línea por espacio
-            $v = preg_replace("/\r\n|\r|\n/", ' ', $v);
-            // normalizar espacios
-            $v = trim(preg_replace('/\s+/', ' ', $v));
-            return $v;
-        };
-
-        // Usar punto y coma (;) como separador para mejor compatibilidad en locales que usan coma decimal
-        $delimiter = ';';
-
-        // Escribir cabecera
-        fputcsv($handle, $columns, $delimiter);
-
-        $query->chunk(200, function ($items) use ($handle, $sanitize, $delimiter) {
-            foreach ($items as $item) {
-                // Formateos legibles
-                $monto = '';
-                if (isset($item->monto_solicitado) && is_numeric($item->monto_solicitado)) {
-                    // Usar formato local: separador de miles '.' y decimal ','
-                    $monto = number_format($item->monto_solicitado, 2, ',', '.');
-                }
-
-                $plazo = $sanitize($item->plazo_meses);
-                if ($plazo !== '') $plazo = $plazo;
-
-                $tipo = $sanitize($item->tipo_credito);
-                if ($tipo !== '') $tipo = ucfirst(str_replace('_', ' ', $tipo));
-
-                $estado = $sanitize($item->estado);
-                if ($estado !== '') $estado = ucfirst(str_replace('_', ' ', $estado));
-
-                $created = '';
-                if ($item->created_at) {
-                    try {
-                        $created = $item->created_at->format('d/m/Y H:i');
-                    } catch (\Throwable $e) {
-                        $created = $sanitize($item->created_at);
-                    }
-                }
-
-                fputcsv($handle, [
-                    $sanitize($item->id),
-                    $sanitize($item->nombre),
-                    $sanitize($item->dni),
-                    $sanitize($item->celular),
-                    $monto,
-                    $plazo,
-                    $tipo,
-                    $sanitize($item->agencia),
-                    $estado,
-                    $created,
-                ], $delimiter);
-            }
-        });
-
-        fclose($handle);
-    };
-
-    return response()->streamDownload($callback, $filename, [
-        'Content-Type' => 'text/csv',
-        'Cache-Control' => 'no-cache, must-revalidate',
-    ]);
-})->middleware(['auth','verified'])->name('simulaciones.export');
-
+use App\Http\Controllers\SimulacionExportController;
+Route::get('simulaciones/export', [SimulacionExportController::class, 'export'])
+    ->middleware(['auth','role_or_permission:asesor|admin|simulaciones.ver'])
+    ->name('simulaciones.export');
 
 // ajustes de usuario autenticado (igual solo los vería el admin real ahora)
 Route::middleware(['auth', 'isAdmin'])->group(function () {
@@ -293,3 +116,30 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
 
 // rutas de login/logout de breeze-livewire
 require __DIR__.'/auth.php';
+
+// Servicios (apartados independientes)
+Route::view('/servicios', 'servicios.index')->name('servicios');
+Route::view('/servicios/ahorro', 'servicios.ahorro')->name('servicios.ahorro');
+Route::view('/servicios/creditos', 'servicios.creditos')->name('servicios.creditos');
+Route::view('/servicios/complementarios', 'servicios.complementarios')->name('servicios.complementarios');
+Route::view('/servicios/beneficios', 'servicios.beneficios')->name('servicios.beneficios');
+
+// RR.HH. · Gestión de Asesores (solo rrhh o admin)
+use App\Http\Controllers\Rrhh\AsesorController as RrhhAsesorController;
+Route::middleware(['auth','role_or_permission:rrhh|admin|rrhh.gestionar'])
+    ->name('rrhh.')
+    ->prefix('rrhh')
+    ->group(function(){
+        Route::resource('asesores', RrhhAsesorController::class)->except(['show']);
+    });
+
+
+
+// Admin · Gestión de Usuarios/Roles
+Route::middleware(['auth','role:admin'])->prefix('admin')->name('admin.')->group(function(){
+    Route::resource('usuarios', \App\Http\Controllers\Admin\UserRoleController::class)->only(['index','edit','update']);
+});
+
+
+
+
