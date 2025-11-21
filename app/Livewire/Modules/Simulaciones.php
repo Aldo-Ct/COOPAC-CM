@@ -213,6 +213,15 @@ class Simulaciones extends Component
     }
 
     /**
+     * Botón rojo rápido para eliminar seleccionados.
+     */
+    public function deleteSelected()
+    {
+        $this->bulkAction = 'delete';
+        return $this->runBulkAction();
+    }
+
+    /**
      * Exporta los registros seleccionados como CSV.
      */
     public function exportSelected()
@@ -225,7 +234,7 @@ class Simulaciones extends Component
         }
 
         // Construir URL hacia la ruta de export (closure en routes/web.php)
-        $params = ['ids' => implode(',', $ids)];
+        $params = ['ids' => implode(',', $ids), 'format' => 'xls'];
         $url = route('simulaciones.export', $params);
 
         // Indicar al navegador que abra la URL para descargar
@@ -241,6 +250,7 @@ class Simulaciones extends Component
     {
         // Usamos los filtros activos para construir la URL de exportación
         $params = $this->getAppliedFilters();
+        $params['format'] = 'xls';
 
         $url = route('simulaciones.export', $params);
 

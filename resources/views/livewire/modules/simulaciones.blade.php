@@ -21,7 +21,7 @@
                     </button>
 
                     <button wire:click.prevent="exportAll" class="sim-action-btn sim-action-primary" type="button">
-                        Exportar CSV
+                        Exportar Excel (XLS)
                     </button>
                 </div>
             </div>
@@ -207,11 +207,18 @@
                 <select wire:model="bulkAction" class="bulk-select">
                     <option value="">Acción masiva…</option>
                     <option value="delete">Eliminar seleccionados</option>
-                    <option value="export">Exportar seleccionados</option>
                 </select>
 
                 <button wire:click="runBulkAction" class="bulk-apply-btn">
                     Aplicar
+                </button>
+
+                <button wire:click.prevent="exportAll" class="bulk-apply-btn bulk-primary">
+                    Exportar Excel (XLS)
+                </button>
+
+                <button wire:click.prevent="deleteSelected" class="bulk-apply-btn bulk-danger">
+                    Eliminar seleccionados
                 </button>
             </div>
 

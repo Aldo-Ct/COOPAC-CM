@@ -55,31 +55,10 @@ class Kernel extends HttpKernel
         'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-
-        // 👇 ESTA ES LA PARTE CLAVE
         'isAdmin' => \App\Http\Middleware\IsAdmin::class,
-        // Usa el middleware oficial de Spatie para roles
-        'role' => \Spatie\\Permission\\Middleware\RoleMiddleware::class,
-        // Mantenemos nuestro RoleGate como alias alterno si se necesitara transitoriamente
+        // Middleware oficial de Spatie para roles/permisos
+        'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+        // Alias alterno propio por compatibilidad
         'rolegate' => \App\Http\Middleware\RoleGate::class,
     ];
-
-    /**
-     * Legacy property for older stubs (kept synchronized).
-     *
-     * @var array<string, class-string|string>
-     */
-    protected $routeMiddleware = [
-        'auth' => \App\Http\Middleware\Authenticate::class,
-        'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
-        'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
-        'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
-        'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-        'isAdmin' => \App\Http\Middleware\IsAdmin::class,
-        'role' => \Spatie\\Permission\\Middleware\RoleMiddleware::class,
-        'rolegate' => \App\Http\Middleware\RoleGate::class,
-    ];
-
 }
-

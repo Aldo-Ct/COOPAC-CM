@@ -21,9 +21,8 @@
   @stack('styles')
 
     <!-- Favicons -->
-    <link rel="icon" href="/favicon.ico" sizes="any">
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="icon" href="/IMAGENES/LOGORED.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/IMAGENES/LOGORED.ico">
   </head>
 
   <body class="bg-light">
@@ -59,19 +58,17 @@
               <a class="nav-link nav-chip @yield('activo-inicio')" href="/">Inicio</a>
             </li>
 
-            <li class="nav-item">
-              <a class="nav-link nav-chip @yield('activo-noticias')" href="{{ route('noticias') }}">Noticias</a>
-            </li>
-
             <li class="nav-item dropdown">
               <a class="nav-link nav-chip dropdown-toggle @yield('activo-quienes')"
                  href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Quiénes somos
+                Nosotros
               </a>
               <ul class="dropdown-menu dropdown-menu-dark">
+                <li><a class="dropdown-item" href="{{ route('quienes') }}#quienes-somos">Quiénes somos</a></li>
                 <li><a class="dropdown-item" href="{{ route('quienes') }}#historia">Historia</a></li>
                 <li><a class="dropdown-item" href="{{ route('quienes') }}#mision-vision">Misión y Visión</a></li>
-                <li><a class="dropdown-item" href="{{ route('quienes') }}#valores">Valores</a></li>
+                <li><a class="dropdown-item" href="{{ route('quienes') }}#valores-principios">Valores y principios</a></li>
+                <li><a class="dropdown-item" href="{{ route('quienes') }}#organizacion">Organización</a></li>
               </ul>
             </li>
 
@@ -86,28 +83,29 @@
                     Simulador de Créditos
                   </a>
                 </li>
-                <li><a class="dropdown-item" href="{{ route('servicios.ahorro') }}">Ahorro</a></li>
-                <li><a class="dropdown-item" href="{{ route('servicios.creditos') }}">Créditos</a></li>
-                <li><a class="dropdown-item" href="{{ route('servicios.complementarios') }}">Servicios Complementarios</a></li>
-                <li><a class="dropdown-item" href="{{ route('servicios.beneficios') }}">Beneficios</a></li>
+                <li><a class="dropdown-item" href="{{ route('servicios.ahorro') }}#ahorros">Ahorros</a></li>
+                <li><a class="dropdown-item" href="{{ route('servicios.ahorro') }}#creditos">Créditos</a></li>
+                <li><a class="dropdown-item" href="{{ route('servicios.ahorro') }}#beneficios-socio">Beneficios</a></li>
+                <li><a class="dropdown-item" href="{{ route('servicios.ahorro') }}#servicios-complementarios">Servicios complementarios</a></li>
+                <li><a class="dropdown-item" href="{{ route('servicios.ahorro') }}#requisitos-socio">Requisitos para ser socio</a></li>
               </ul>
             </li>
 
-            <li class="nav-item dropdown">
-              <a class="nav-link nav-chip dropdown-toggle @yield('activo-beneficios')"
-                 href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Beneficios
-              </a>
-              <ul class="dropdown-menu dropdown-menu-dark">
-                <li><a class="dropdown-item" href="#">Ventajas de ser socio</a></li>
-                <li><a class="dropdown-item" href="#">Programas especiales</a></li>
-                <li><a class="dropdown-item" href="#">Campañas</a></li>
-              </ul>
+            <li class="nav-item">
+              <a class="nav-link nav-chip @yield('activo-noticias')" href="{{ route('noticias') }}">Noticias</a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link nav-chip" href="{{ url('/agencias') }}">Agencias</a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link nav-chip" href="{{ url('/transparencia') }}">Transparencia</a>
             </li>
           </ul>
 
-          <form class="d-flex ms-3 align-items-center search-wrap" role="search">
-            <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Buscar">
+          <form class="d-flex ms-3 align-items-center search-wrap" role="search" action="{{ route('buscar') }}" method="GET">
+            <input class="form-control me-2" type="search" name="q" value="{{ request('q') }}" placeholder="Buscar noticias..." aria-label="Buscar noticias">
             <button class="btn btn-outline-success" type="submit">Buscar</button>
           </form>
         </div>
@@ -118,7 +116,7 @@
     <div class="w-100 p-2 text-white bg-success border border-warning rounded-0 text-center">
       <h6 class="mb-0">
         Pide tu Crédito de consumo por WhatsApp de forma rápida y segura.
-        <a href="https://wa.me/51956060634" class="text-warning fw-bold text-decoration-none" target="_blank">
+        <a href="https://wa.me/51921755294" class="text-warning fw-bold text-decoration-none" target="_blank">
           Solicitar
         </a>
       </h6>
@@ -129,9 +127,9 @@
 
     {{-- ───────── FOOTER ───────── --}}
      <!-- FOOTER -->
-    <footer class="site-footer mt-5">
-      <div class="container py-5">
-        <div class="row gy-4">
+    <footer class="site-footer mt-4">
+      <div class="container py-4">
+        <div class="row gy-3">
 
           <!-- Columna 1: logo + slogan -->
           <div class="col-12 col-md-4">
@@ -171,11 +169,11 @@
               </li>
               <li>
                 <i class="bi bi-telephone-fill"></i>
-                <span>(+51) 000 000 000</span>
+                <span>(+51) 921 755 294</span>
               </li>
               <li>
                 <i class="bi bi-envelope-fill"></i>
-                <span>informes@coopcabanillas.pe</span>
+                <span>cabanillasmañazo@coopcm.com</span>
               </li>
             </ul>
           </div>
@@ -190,7 +188,7 @@
               <a class="social-circle" href="#" aria-label="Instagram">
                 <i class="bi bi-instagram"></i>
               </a>
-              <a class="social-circle" href="#" aria-label="WhatsApp">
+              <a class="social-circle" href="https://wa.me/51921755294" aria-label="WhatsApp">
                 <i class="bi bi-whatsapp"></i>
               </a>
               <a class="social-circle" href="#" aria-label="YouTube">
@@ -224,7 +222,7 @@
     </footer>
 
     {{-- BOTÓN WHATSAPP FLOTANTE (si ya lo definiste en estilos.css) --}}
-    <a href="https://wa.me/51900000000"
+    <a href="https://wa.me/51921755294"
       class="whatsapp-float"
       target="_blank"
       aria-label="Chat por WhatsApp">
@@ -296,4 +294,3 @@ document.addEventListener('DOMContentLoaded', function() {
 
   </body>
 </html>
-

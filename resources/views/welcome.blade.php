@@ -105,7 +105,7 @@
         </p>
 
         <div class="mt-4">
-          <a href="#novedades" class="btn btn-success px-4 py-2 fw-semibold">
+          <a href="{{ route('quienes') }}#quienes-somos" class="btn btn-success px-4 py-2 fw-semibold">
             Conoce más sobre nosotros
           </a>
         </div>
@@ -260,18 +260,18 @@
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-lg-8 text-center">
-                    <h2 class="fw-bold mb-3" style="color:#0d5a28;">Portal de Transparencia</h2>
+                    <h2 class="fw-bold mb-3" style="color:#0d5a28;">Educación financiera “Finanzas para Ti” (SBS)</h2>
                     <p class="text-muted mb-4">
                         Comprometidos con la claridad y el acceso a la información.
                     </p>
                     <div class="card shadow-sm border-0">
                         <div class="card-body p-4">
                             <img src="/IMAGENES/SBS_logo.png" alt="Logo SBS" style="height: 50px;" class="mb-3">
-                            <h5 class="card-title fw-semibold">Información Financiera y de Mercado</h5>
+                            <h5 class="card-title fw-semibold">Información Financiera</h5>
                             <p class="card-text text-muted">
-                                Como entidad supervisada, nuestra información está disponible públicamente en el portal de la Superintendencia de Banca, Seguros y AFP (SBS). Consulta nuestros estados financieros, indicadores y más.
+                                En cumplimiento de las disposiciones de la SBS en materia de educación financiera, ponemos a tu disposición el programa “Finanzas para Ti” de la Superintendencia de Banca, Seguros y AFP, que te ayuda a mejorar tus conocimientos y hábitos financieros para tomar mejores decisiones con tu dinero y cuidar el bienestar de tu familia.
                             </p>
-                            <a href="https://www.sbs.gob.pe/" target="_blank" rel="noopener noreferrer" class="btn btn-success fw-semibold px-4 py-2">
+                            <a href="https://www.sbs.gob.pe/educacion-financiera/Finanzas-para-Ti" target="_blank" rel="noopener noreferrer" class="btn btn-success fw-semibold px-4 py-2">
                                 Visitar portal de la SBS
                             </a>
                         </div>
@@ -280,6 +280,6 @@
             </div>
         </div>
     </section>
-    
+
 
 @endsection

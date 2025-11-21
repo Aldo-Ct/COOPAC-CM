@@ -29,6 +29,7 @@ Route::get('/', function () {
 
 // Noticias page
 Route::get('/noticias', [NoticiaController::class, 'index'])->name('noticias');
+Route::get('/buscar', [NoticiaController::class, 'search'])->name('buscar');
 // Quiénes somos: página única con secciones + compatibilidad de rutas antiguas
 Route::view('/quienes', 'Nosotros')->name('quienes');
 Route::get('/quienes/historia', fn () => redirect('/quienes#historia'))->name('quienes.historia');
@@ -117,12 +118,14 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
 // rutas de login/logout de breeze-livewire
 require __DIR__.'/auth.php';
 
-// Servicios (apartados independientes)
-Route::view('/servicios', 'servicios.index')->name('servicios');
+// Servicios (página unificada + compatibilidad)
+Route::redirect('/servicios', '/servicios/ahorro')->name('servicios');
 Route::view('/servicios/ahorro', 'servicios.ahorro')->name('servicios.ahorro');
-Route::view('/servicios/creditos', 'servicios.creditos')->name('servicios.creditos');
-Route::view('/servicios/complementarios', 'servicios.complementarios')->name('servicios.complementarios');
-Route::view('/servicios/beneficios', 'servicios.beneficios')->name('servicios.beneficios');
+Route::get('/servicios/creditos', fn () => redirect('/servicios/ahorro#creditos'))->name('servicios.creditos');
+Route::get('/servicios/complementarios', fn () => redirect('/servicios/ahorro#servicios-complementarios'))->name('servicios.complementarios');
+Route::get('/servicios/beneficios', fn () => redirect('/servicios/ahorro#beneficios-socio'))->name('servicios.beneficios');
+Route::view('/agencias', 'agencias')->name('agencias');
+Route::view('/transparencia', 'transparencia')->name('transparencia');
 
 // RR.HH. · Gestión de Asesores (solo rrhh o admin)
 use App\Http\Controllers\Rrhh\AsesorController as RrhhAsesorController;

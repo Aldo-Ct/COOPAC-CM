@@ -8,7 +8,6 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('prospectos_credito', function (Blueprint $table) {
-            // Si tu campo "estado" ya existe, lo dejamos y solo agregamos el nuevo:
             if (!Schema::hasColumn('prospectos_credito', 'cuota_estimada')) {
                 $table->decimal('cuota_estimada', 12, 2)->nullable()->after('agencia');
             }

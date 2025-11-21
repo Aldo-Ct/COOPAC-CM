@@ -24,7 +24,8 @@ class ProspectoCreditoController extends Controller
             'dni'               => ['required','digits:8'],
             'celular'           => ['required','digits:9'],
             'monto_solicitado'  => ['required','numeric','min:1'],
-            'plazo_meses'       => ['required','integer','min:1'],
+            // Evita plazos absurdos que rompen la fórmula (NaN/overflow)
+            'plazo_meses'       => ['required','integer','min:1','max:120'],
             'agencia'           => ['required','string','max:100'],
             'tipo_credito'      => ['nullable','string','max:100'],
             'cuota_estimada'    => ['nullable','numeric'], // viene del hidden
@@ -35,7 +36,16 @@ class ProspectoCreditoController extends Controller
         $tem  = pow(1 + $tea, 1/12) - 1;
         $monto= (float)$data['monto_solicitado'];
         $plazo= (int)$data['plazo_meses'];
-        $cuotaSrv = $monto * ( $tem * pow(1+$tem, $plazo) ) / ( pow(1+$tem, $plazo) - 1 );
+
+        // Si por alguna razón llega un plazo demasiado grande, lo acotamos a evitar NaN/Infinity
+        if ($plazo < 1) { $plazo = 1; }
+        if ($plazo > 120) { $plazo = 120; }
+
+        $factor = pow(1+$tem, $plazo);
+        $denom  = $factor - 1;
+        $cuotaSrv = $denom > 0
+            ? $monto * ( $tem * $factor ) / $denom
+            : 0;
         $cuotaSrv = round($cuotaSrv, 2);
 
         // --- Generador de Amortización ---

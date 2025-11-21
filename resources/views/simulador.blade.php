@@ -149,10 +149,17 @@
                                 <label class="form-label">Agencia</label>
                                 <select name="agencia" class="form-select" required>
                                     <option value="">Seleccione su agencia</option>
-                                    <option value="Cabanillas" @if(old('agencia') == 'Cabanillas') selected @endif>Cabanillas</option>
-                                    <option value="Juliaca" @if(old('agencia') == 'Juliaca') selected @endif>Juliaca</option>
-                                    <option value="Arequipa - Mariano Melgar" @if(old('agencia') == 'Arequipa - Mariano Melgar') selected @endif>Arequipa - Mariano Melgar</option>
-                                    <option value="Campo / Visita" @if(old('agencia') == 'Campo / Visita') selected @endif>Campo / Visita</option>
+                                    <option value="Sede Principal – Cabanillas" @if(old('agencia') == 'Sede Principal – Cabanillas') selected @endif>Sede Principal – Cabanillas</option>
+                                    <option value="Agencia Mañazo" @if(old('agencia') == 'Agencia Mañazo') selected @endif>Agencia Mañazo</option>
+                                    <option value="Agencia Atuncolla" @if(old('agencia') == 'Agencia Atuncolla') selected @endif>Agencia Atuncolla</option>
+                                    <option value="Agencia Coata" @if(old('agencia') == 'Agencia Coata') selected @endif>Agencia Coata</option>
+                                    <option value="Agencia Puno" @if(old('agencia') == 'Agencia Puno') selected @endif>Agencia Puno</option>
+                                    <option value="Agencia Juliaca" @if(old('agencia') == 'Agencia Juliaca') selected @endif>Agencia Juliaca</option>
+                                    <option value="Agencia Ayaviri" @if(old('agencia') == 'Agencia Ayaviri') selected @endif>Agencia Ayaviri</option>
+                                    <option value="Agencia Azángaro" @if(old('agencia') == 'Agencia Azángaro') selected @endif>Agencia Azángaro</option>
+                                    <option value="Agencia Crucero" @if(old('agencia') == 'Agencia Crucero') selected @endif>Agencia Crucero</option>
+                                    <option value="Agencia San Miguel" @if(old('agencia') == 'Agencia San Miguel') selected @endif>Agencia San Miguel</option>
+                                    <option value="Agencia Arequipa" @if(old('agencia') == 'Agencia Arequipa') selected @endif>Agencia Arequipa</option>
                                 </select>
                                 @error('agencia')
                                     <small class="text-danger d-block">{{ $message }}</small>
