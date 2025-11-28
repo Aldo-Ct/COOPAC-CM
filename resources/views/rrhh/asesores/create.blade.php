@@ -21,7 +21,19 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Agencia</label>
-                @php($agencias = ['Cabanillas','Juliaca','Arequipa','Azángaro','Puno'])
+                @php($agencias = [
+                    'Sede Principal – Cabanillas',
+                    'Agencia Mañazo',
+                    'Agencia Atuncolla',
+                    'Agencia Coata',
+                    'Agencia Puno',
+                    'Agencia Juliaca',
+                    'Agencia Ayaviri',
+                    'Agencia Azángaro',
+                    'Agencia Crucero',
+                    'Agencia San Miguel',
+                    'Agencia Arequipa',
+                ])
                 <select name="agencia" class="mt-1 w-full rounded-md border dark:bg-zinc-800 dark:text-white">
                     <option value="">Seleccione agencia</option>
                     @foreach($agencias as $ag)

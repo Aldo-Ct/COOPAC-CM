@@ -1,5 +1,9 @@
 <x-layouts.app :title="__('Editar roles')">
     <div class="max-w-3xl mx-auto p-6">
+        @php
+            /** @var \App\Models\User $usuario */
+        @endphp
+        {{-- Formulario para asignar roles y permisos al usuario --}}
         <h1 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Editar: {{ $usuario->name }}</h1>
 
         <form action="{{ route('admin.usuarios.update', $usuario) }}" method="POST" class="space-y-6 bg-white dark:bg-zinc-900 p-4 rounded-md shadow-sm">
@@ -39,4 +43,3 @@
         </form>
     </div>
 </x-layouts.app>
-

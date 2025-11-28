@@ -149,6 +149,7 @@ return [
         // Features::emailVerification(),
         // Features::updateProfileInformation(),
         // Features::updatePasswords(),
+        // Two-factor authentication is enabled. You can tweak the options below.
         Features::twoFactorAuthentication([
             'confirm' => true,
             'confirmPassword' => true,

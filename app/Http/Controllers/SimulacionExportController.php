@@ -24,10 +24,6 @@ class SimulacionExportController extends Controller
             return $this->exportXls($query);
         }
 
-        if ($format === 'pdf') {
-            return $this->exportPdf($query);
-        }
-
         return $this->exportCsv($query);
     }
 
@@ -98,36 +94,6 @@ class SimulacionExportController extends Controller
             'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
             'Cache-Control' => 'no-cache, must-revalidate',
         ]);
-    }
-
-    /**
-     * Export data as a PDF file.
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @return \Illuminate\Http\Response
-     */
-    private function exportPdf($query)
-    {
-        $filename = 'simulaciones_' . now()->format('Ymd_His') . '.pdf';
-        $html = "\xEF\xBB\xBF" . $this->generateTableHtml($query);
-
-        if (class_exists('\\Barryvdh\\DomPDF\\Facade\\Pdf')) {
-            return \Barryvdh\DomPDF\Facade\Pdf::loadHtml($html)->download($filename);
-        }
-
-        if (class_exists('Dompdf\\Dompdf')) {
-            try {
-                $dompdf = new \Dompdf\Dompdf();
-                $dompdf->loadHtml($html);
-                $dompdf->setPaper('A4', 'landscape');
-                $dompdf->render();
-                return $dompdf->stream($filename);
-            } catch (\Throwable $e) {
-                return response('Error generando PDF: ' . $e->getMessage(), 500);
-            }
-        }
-
-        return response('Para exportar a PDF instala barryvdh/laravel-dompdf o dompdf/dompdf.', 500);
     }
 
     /**
@@ -260,4 +226,3 @@ class SimulacionExportController extends Controller
         return $html;
     }
 }
-

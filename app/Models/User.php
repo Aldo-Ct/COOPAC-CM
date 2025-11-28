@@ -2,6 +2,16 @@
 
 namespace App\Models;
 
+/**
+ * Clase User
+ *
+ * PHPDoc para que el IDE reconozca métodos del trait de roles (hasRole, assignRole, etc.)
+ * y de 2FA de Fortify.
+ *
+ * @mixin \Spatie\Permission\Traits\HasRoles
+ * @mixin \Laravel\Fortify\TwoFactorAuthenticatable
+ */
+
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -13,6 +23,8 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
+    // HasRoles: trait de Spatie para roles/permisos (hasRole, can, assignRole, syncRoles, etc.).
+    // TwoFactorAuthenticatable: soporte de 2FA provisto por Fortify.
     use HasFactory, Notifiable, TwoFactorAuthenticatable, HasRoles;
 
     /**

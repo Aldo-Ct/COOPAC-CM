@@ -8,33 +8,29 @@
     <div class="sim-card">
 
         {{-- BARRA SUPERIOR --}}
+        <div class="text-center mb-3">
+            <h2 class="sim-title d-inline-block me-2">Simulaciones</h2>
+            <span class="sim-count-badge align-middle">{{ $simulaciones->total() }} registros</span>
+        </div>
+
         <div class="sim-header-row">
-            <div class="sim-header-left">
-                <div class="sim-title-row">
-                    <h2 class="sim-title">Simulaciones</h2>
-                    <span class="sim-count-badge">{{ $simulaciones->total() }} registros</span>
-                </div>
-
-                <div class="sim-actions-row">
-                    <button wire:click="clearSelection" class="sim-action-btn sim-action-secondary">
-                        Limpiar filtros
-                    </button>
-
-                    <button wire:click.prevent="exportAll" class="sim-action-btn sim-action-primary" type="button">
-                        Exportar Excel (XLS)
-                    </button>
-                </div>
-            </div>
-
             <div class="sim-header-right">
                 {{-- Filtros correlativos en línea --}}
                 <div class="sim-filter">
                     <label class="sim-filter-label">Agencia</label>
                     <select wire:model="filtroAgencia" class="sim-filter-input">
                         <option value="">Todas</option>
-                        <option value="Cabanillas">Cabanillas</option>
-                        <option value="Puno Centro">Puno Centro</option>
-                        <option value="Juliaca">Juliaca</option>
+                        <option value="Sede Principal – Cabanillas">Sede Principal – Cabanillas</option>
+                        <option value="Agencia Mañazo">Agencia Mañazo</option>
+                        <option value="Agencia Atuncolla">Agencia Atuncolla</option>
+                        <option value="Agencia Coata">Agencia Coata</option>
+                        <option value="Agencia Puno">Agencia Puno</option>
+                        <option value="Agencia Juliaca">Agencia Juliaca</option>
+                        <option value="Agencia Ayaviri">Agencia Ayaviri</option>
+                        <option value="Agencia Azángaro">Agencia Azángaro</option>
+                        <option value="Agencia Crucero">Agencia Crucero</option>
+                        <option value="Agencia San Miguel">Agencia San Miguel</option>
+                        <option value="Agencia Arequipa">Agencia Arequipa</option>
                     </select>
                 </div>
 
@@ -51,25 +47,23 @@
                 </div>
 
                 <div class="sim-filter">
-                    <label class="sim-filter-label">Tipo</label>
-                    <select wire:model="filtroTipo" class="sim-filter-input">
-                        <option value="">Todos</option>
-                        <option value="consumo">Consumo</option>
-                        <option value="hipotecario">Hipotecario</option>
-                        <option value="vehicular">Vehicular</option>
-                    </select>
-                </div>
-
-                <div class="sim-filter short">
                     <label class="sim-filter-label">Fecha</label>
                     <input wire:model="filtroFecha" type="date" class="sim-filter-input">
+                </div>
+
+                <div class="sim-filter">
+                    <label class="sim-filter-label text-transparent">.</label>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="sim-action-btn sim-action-primary px-3" wire:click="$refresh">Aplicar</button>
+                        <button type="button" class="sim-action-btn sim-action-secondary px-3" wire:click="clearSelection">Limpiar filtros</button>
+                    </div>
                 </div>
 
                 <div class="sim-filter grow">
                     <label class="sim-filter-label">Buscar</label>
                     <div class="sim-search-wrapper">
                         <input
-                            wire:model.debounce.500ms="search"
+                            wire:model.live.debounce.400ms="search"
                             type="text"
                             class="sim-search-input"
                             placeholder="Nombre, DNI o celular..."
@@ -160,32 +154,16 @@
                             </td>
 
                             <td class="acciones-cell">
-                                <button
-                                    wire:click="select({{ $s->id }})"
-                                    class="icon-btn view"
-                                    title="Ver detalle"
-                                >
-                                    <i class="bi bi-eye"></i>
-                                </button>
-
                                 @if($s->celular)
                                     <a
                                         href="https://wa.me/{{ preg_replace('/[^0-9]/','', $s->celular) }}"
                                         target="_blank"
-                                        class="icon-btn whatsapp"
-                                        title="WhatsApp"
+                                        class="icon-btn whatsapp main-whatsapp"
+                                        title="Enviar WhatsApp"
                                     >
                                         <i class="bi bi-whatsapp"></i>
                                     </a>
                                 @endif
-
-                                <button
-                                    wire:click="confirmDelete({{ $s->id }})"
-                                    class="icon-btn delete"
-                                    title="Eliminar"
-                                >
-                                    <i class="bi bi-trash"></i>
-                                </button>
                             </td>
                         </tr>
                     @empty
@@ -200,25 +178,12 @@
         {{-- FOOTER --}}
         <div class="sim-footer-row">
             <div class="sim-footer-left">
-                <span class="sim-footer-text">
-                    Seleccionados: {{ count($selected) }}
-                </span>
-
-                <select wire:model="bulkAction" class="bulk-select">
-                    <option value="">Acción masiva…</option>
-                    <option value="delete">Eliminar seleccionados</option>
-                </select>
-
-                <button wire:click="runBulkAction" class="bulk-apply-btn">
-                    Aplicar
+                <button wire:click.prevent="deleteSelected" class="bulk-apply-btn bulk-danger">
+                    Eliminar seleccionados
                 </button>
 
                 <button wire:click.prevent="exportAll" class="bulk-apply-btn bulk-primary">
                     Exportar Excel (XLS)
-                </button>
-
-                <button wire:click.prevent="deleteSelected" class="bulk-apply-btn bulk-danger">
-                    Eliminar seleccionados
                 </button>
             </div>
 

@@ -7,19 +7,41 @@ use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\File;
 
 class AsesorController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
         // Listar usuarios con rol 'asesor' (Spatie)
-        $asesores = User::role('asesor')
-            ->orderBy('name')
-            ->paginate(12);
+        $q = trim((string) $request->input('q'));
+        $agencia = $request->input('agencia');
+        $agenciasLista = [
+            'Sede Principal – Cabanillas',
+            'Agencia Mañazo',
+            'Agencia Atuncolla',
+            'Agencia Coata',
+            'Agencia Puno',
+            'Agencia Juliaca',
+            'Agencia Ayaviri',
+            'Agencia Azángaro',
+            'Agencia Crucero',
+            'Agencia San Miguel',
+            'Agencia Arequipa',
+        ];
 
-        return view('rrhh.asesores.index', compact('asesores'));
+        $asesores = User::role('asesor')
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where(function ($sub) use ($q) {
+                    $sub->where('name', 'like', "%{$q}%")
+                        ->orWhere('email', 'like', "%{$q}%");
+                });
+            })
+            ->when($agencia, fn($query)=>$query->where('agencia', $agencia))
+            ->orderBy('name')
+            ->paginate(12)
+            ->withQueryString();
+
+        return view('rrhh.asesores.index', compact('asesores','q','agencia','agenciasLista'));
     }
 
     public function create(): View

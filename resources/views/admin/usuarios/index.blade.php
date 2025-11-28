@@ -1,4 +1,5 @@
 <x-layouts.app :title="__('Usuarios · Roles')">
+    {{-- Listado de usuarios para asignar roles/permisos --}}
     <div class="px-4 sm:px-6 lg:px-8">
         <div class="sm:flex sm:items-center">
             <div class="sm:flex-auto">
@@ -20,8 +21,8 @@
         @endif
 
         <div class="mt-6 overflow-hidden bg-white shadow-sm ring-1 ring-black ring-opacity-5 rounded-md dark:bg-zinc-900">
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
-                <thead class="bg-gray-50 dark:bg-zinc-800">
+            <table class="min-w-full dash-table">
+                <thead>
                     <tr>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Nombre</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Email</th>
@@ -47,4 +48,3 @@
         <div class="mt-4">{{ $users->links() }}</div>
     </div>
 </x-layouts.app>
-

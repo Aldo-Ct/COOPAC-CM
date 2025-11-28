@@ -1,5 +1,6 @@
 <x-layouts.app :title="__('Dashboard')">
     @php
+        /** @var \App\Models\User|null $usuario */
         $usuario = auth()->user();
         $totalSim = \App\Models\Simulacion::count();
         $simHoy = \App\Models\Simulacion::whereDate('created_at', now())->count();

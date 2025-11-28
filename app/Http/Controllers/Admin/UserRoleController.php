@@ -12,6 +12,7 @@ use Spatie\Permission\Models\Permission;
 
 class UserRoleController extends Controller
 {
+    // Lista usuarios con buscador para elegir a quién ajustar roles/permisos.
     public function index(Request $request): View
     {
         $q = trim((string) $request->input('q'));
@@ -26,6 +27,7 @@ class UserRoleController extends Controller
         return view('admin.usuarios.index', compact('users','q'));
     }
 
+    // Muestra el formulario con roles y permisos disponibles para el usuario.
     public function edit(User $usuario): View
     {
         $roles = Role::query()->orderBy('name')->pluck('name')->all();
@@ -37,6 +39,7 @@ class UserRoleController extends Controller
         ]);
     }
 
+    // Sincroniza roles y permisos enviados desde el formulario.
     public function update(Request $request, User $usuario): RedirectResponse
     {
         $data = $request->validate([
@@ -64,4 +67,3 @@ class UserRoleController extends Controller
         return redirect()->route('admin.usuarios.index')->with('ok', 'Roles y permisos actualizados');
     }
 }
-
